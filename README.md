@@ -1,3 +1,3 @@
-# jukebox
+# Jukebox
 
 A new Flutter project.
