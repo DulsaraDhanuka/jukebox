@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:jukebox/views/desktop/pages/song_page.dart';
+import 'package:jukebox/views/desktop/pages/player_page.dart';
+import 'package:jukebox/views/desktop/widgets/player.dart';
 
 import 'widgets/menu.dart';
 import 'widgets/sidebar.dart';
@@ -39,19 +40,11 @@ class DesktopScaffold extends StatelessWidget {
                               borderRadius: BorderRadius.circular(10.0),
                             ),
                             clipBehavior: Clip.hardEdge,
-                            child: SongPage(),
+                            child: PlayerPage(),
                           ),
                         ),
                         SizedBox(height: 4.0),
-                        Container(
-                          height: 80.0,
-                          width: double.infinity,
-                          decoration: BoxDecoration(
-                            color: const Color(0xFF333842),
-                            borderRadius: BorderRadius.circular(10.0),
-                          ),
-                          child: Text("XXX"),
-                        ),
+                        Player(),
                       ],
                     ),
                   ),

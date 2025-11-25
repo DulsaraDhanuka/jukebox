@@ -1,8 +1,7 @@
 import 'dart:io' show Platform;
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:jukebox/views/desktop/desktop_scaffold.dart';
-import 'package:jukebox/views/mobile/pages/home_page.dart';
+import 'package:jukebox/views/mobile/mobile_scaffold.dart';
 import 'package:window_manager/window_manager.dart';
 
 void main() async {
@@ -40,7 +39,7 @@ class _MainAppState extends State<MainApp> {
     Widget scaffold = DesktopScaffold();
     if (MediaQuery.of(context).orientation == Orientation.portrait &&
         (Platform.isAndroid || Platform.isIOS)) {
-      scaffold = MobileHomePage();
+      scaffold = MobileScaffold();
     }
 
     return MaterialApp(

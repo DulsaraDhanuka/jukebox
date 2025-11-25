@@ -9,7 +9,7 @@ class MenuSearch extends StatefulWidget {
 
 class _MenuSearchState extends State<MenuSearch> {
   bool hovered = false;
-  bool selected = true;
+  bool selected = false;
 
   @override
   Widget build(BuildContext context) {
