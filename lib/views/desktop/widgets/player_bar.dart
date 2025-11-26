@@ -1,55 +1,75 @@
-import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 import 'package:jukebox/data/notifiers.dart';
+import 'package:media_kit/media_kit.dart';
 
-class Player extends StatefulWidget {
-  const Player({super.key});
+class PlayerBar extends StatefulWidget {
+  const PlayerBar({super.key});
 
   @override
-  State<Player> createState() => _PlayerState();
+  State<PlayerBar> createState() => _PlayerBarState();
 }
 
-class _PlayerState extends State<Player> {
-  final player = AudioPlayer();
+class _PlayerBarState extends State<PlayerBar> {
+  late final player = Player();
+
   Duration audioDuration = Duration.zero;
   Duration currentPosition = Duration.zero;
   bool loop = false;
 
   @override
   void initState() {
-    player.setReleaseMode(ReleaseMode.loop);
-
-    player.onPlayerStateChanged.listen((PlayerState state) {
-      setState(() {
-        if (loop && state == PlayerState.completed) {
-          player.seek(Duration.zero);
-          player.resume();
-        } else if (!loop && state == PlayerState.completed) {
-          player.stop();
-        }
-      });
+    playerNotifier.value = player;
+    player.setVolume(100.0);
+    player.stream.playing.listen((bool playing) {
+      setState(() {});
     });
-    player.onDurationChanged.listen((Duration duration) {
+    player.stream.completed.listen((_) async {
+      if (loop) {
+        await player.seek(Duration.zero);
+        await player.play();
+      }
+      setState(() {});
+    });
+
+    player.stream.error.listen((error) {
+      print("Player Error: $error");
+    });
+
+    player.stream.duration.listen((Duration duration) {
       setState(() {
         audioDuration = duration;
       });
     });
-    player.onPositionChanged.listen((Duration position) {
+
+    player.stream.position.listen((Duration position) {
       setState(() {
         currentPosition = position;
       });
     });
-    // player.play(DeviceFileSource("/mnt/data/songs/Anytime Anywhere.mp3"));
-    musicFileNotifier.addListener(() {
+
+    musicFileNotifier.addListener(() async {
       final filePath = musicFileNotifier.value;
       if (filePath != null && filePath.isNotEmpty) {
-        player.stop();
-        player.release();
-        player.play(DeviceFileSource(filePath));
+        if (player.state.playing) {
+          await player.stop();
+        }
+
+        await player.open(
+          Media(
+            filePath,
+          ),
+        );
+        setState(() {});
       }
     });
 
     super.initState();
+  }
+
+  @override
+  void dispose() {
+    player.dispose();
+    super.dispose();
   }
 
   @override
@@ -71,16 +91,14 @@ class _PlayerState extends State<Player> {
               backgroundColor: const Color(0xFF1ED760),
             ),
             icon: Icon(
-              player.state == PlayerState.playing
-                  ? Icons.pause
-                  : Icons.play_arrow,
+              player.state.playing ? Icons.pause : Icons.play_arrow,
               color: Colors.black,
             ),
-            onPressed: () {
-              if (player.state == PlayerState.playing) {
-                player.pause();
+            onPressed: () async {
+              if (player.state.playing) {
+                await player.pause();
               } else {
-                player.resume();
+                await player.play();
               }
             },
           ),
@@ -133,8 +151,8 @@ class _PlayerState extends State<Player> {
                       divisions: audioDuration.inSeconds == 0
                           ? null
                           : audioDuration.inSeconds,
-                      onChanged: (value) {
-                        player.seek(Duration(seconds: value.toInt()));
+                      onChanged: (value) async {
+                        await player.seek(Duration(seconds: value.toInt()));
                       },
                     ),
                   ),

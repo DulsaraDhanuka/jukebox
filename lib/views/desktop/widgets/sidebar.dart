@@ -42,8 +42,7 @@ class _SidebarState extends State<Sidebar> {
                 selected: false,
                 onTap: () async {
                   FilePickerResult? result = await FilePicker.platform.pickFiles(
-                    type: FileType.custom,
-                    allowedExtensions: ['mp3', 'wav', 'm4a', 'flac'],
+                    type: FileType.any,
                   );
 
                   if (result != null && result.files.isNotEmpty) {

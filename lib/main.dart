@@ -2,11 +2,13 @@ import 'dart:io' show Platform;
 import 'package:flutter/material.dart';
 import 'package:jukebox/views/desktop/desktop_scaffold.dart';
 import 'package:jukebox/views/mobile/mobile_scaffold.dart';
+import 'package:media_kit/media_kit.dart';
 import 'package:window_manager/window_manager.dart';
 
 void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
   if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
-    WidgetsFlutterBinding.ensureInitialized();
     // Must add this line.
     await windowManager.ensureInitialized();
 
@@ -22,6 +24,8 @@ void main() async {
       await windowManager.focus();
     });
   }
+
+  MediaKit.ensureInitialized();
 
   runApp(const MainApp());
 }

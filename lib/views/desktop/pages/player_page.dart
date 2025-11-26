@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:jukebox/data/notifiers.dart';
+import 'package:media_kit_video/media_kit_video.dart';
 
 class PlayerPage extends StatefulWidget {
   const PlayerPage({super.key});
@@ -10,11 +12,25 @@ class PlayerPage extends StatefulWidget {
 class _PlayerPageState extends State<PlayerPage>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
+  VideoController? controller;
 
   @override
   void initState() {
     _tabController = TabController(length: 1, vsync: this);
     super.initState();
+
+    playerNotifier.addListener(() {
+      final player = playerNotifier.value;
+      if (player != null) {
+        controller = VideoController(
+          player,
+          configuration: VideoControllerConfiguration(
+            enableHardwareAcceleration: false,
+          ),
+        );
+        setState(() {});
+      }
+    });
   }
 
   @override
@@ -36,11 +52,16 @@ class _PlayerPageState extends State<PlayerPage>
                 flex: 3,
                 child: AspectRatio(
                   aspectRatio: 16 / 9,
-                  child: Container(
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(10.0),
-                      color: Colors.blue,
-                    ),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(10.0),
+                    child: controller != null
+                        ? Video(
+                            controller: controller!,
+                            controls: (state) {
+                              return const SizedBox.shrink();
+                            },
+                          )
+                        : Container(color: Colors.black),
                   ),
                 ),
               ),

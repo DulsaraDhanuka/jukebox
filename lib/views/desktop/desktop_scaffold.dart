@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:jukebox/views/desktop/pages/player_page.dart';
-import 'package:jukebox/views/desktop/widgets/player.dart';
+import 'package:jukebox/views/desktop/widgets/player_bar.dart';
 
 import 'widgets/menu.dart';
 import 'widgets/sidebar.dart';
@@ -44,7 +44,7 @@ class DesktopScaffold extends StatelessWidget {
                           ),
                         ),
                         SizedBox(height: 4.0),
-                        Player(),
+                        PlayerBar(),
                       ],
                     ),
                   ),
