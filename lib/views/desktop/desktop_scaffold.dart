@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:jukebox/data/notifiers.dart';
 import 'package:jukebox/views/desktop/pages/player_page.dart';
 import 'package:jukebox/views/desktop/widgets/player_bar.dart';
 
@@ -40,7 +41,12 @@ class DesktopScaffold extends StatelessWidget {
                               borderRadius: BorderRadius.circular(10.0),
                             ),
                             clipBehavior: Clip.hardEdge,
-                            child: PlayerPage(),
+                            child: ValueListenableBuilder(
+                              valueListenable: currentPageNotifier,
+                              builder: (context, currentPage, child) {
+                                return currentPage ?? PlayerPage();
+                              }
+                            ),
                           ),
                         ),
                         SizedBox(height: 4.0),

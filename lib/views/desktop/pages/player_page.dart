@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:jukebox/data/notifiers.dart';
+import 'package:jukebox/data/playback_handler.dart';
+import 'package:jukebox/views/desktop/widgets/lyrics_view.dart';
 import 'package:media_kit_video/media_kit_video.dart';
 
 class PlayerPage extends StatefulWidget {
@@ -19,18 +20,18 @@ class _PlayerPageState extends State<PlayerPage>
     _tabController = TabController(length: 1, vsync: this);
     super.initState();
 
-    playerNotifier.addListener(() {
-      final player = playerNotifier.value;
-      if (player != null) {
-        controller = VideoController(
-          player,
-          configuration: VideoControllerConfiguration(
-            enableHardwareAcceleration: false,
-          ),
-        );
-        setState(() {});
-      }
-    });
+    controller = VideoController(
+      PlaybackHandler().player,
+      configuration: VideoControllerConfiguration(
+        enableHardwareAcceleration: false,
+      ),
+    );
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
   }
 
   @override
@@ -44,29 +45,33 @@ class _PlayerPageState extends State<PlayerPage>
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisAlignment: MainAxisAlignment.start,
         children: [
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            spacing: 20.0,
-            children: [
-              Expanded(
-                flex: 3,
-                child: AspectRatio(
-                  aspectRatio: 16 / 9,
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(10.0),
-                    child: controller != null
-                        ? Video(
-                            controller: controller!,
-                            controls: (state) {
-                              return const SizedBox.shrink();
-                            },
-                          )
-                        : Container(color: Colors.black),
+          ConstrainedBox(
+            constraints: BoxConstraints(maxHeight: 500.0),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              spacing: 20.0,
+              children: [
+                Flexible(
+                  flex: 2,
+                  fit: FlexFit.loose,
+                  child: AspectRatio(
+                    aspectRatio: 16 / 9,
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(10.0),
+                      child: controller != null
+                          ? Video(
+                              controller: controller!,
+                              controls: (state) {
+                                return const SizedBox.shrink();
+                              },
+                            )
+                          : Container(color: Colors.black),
+                    ),
                   ),
                 ),
-              ),
-              Expanded(child: Text("Music title")),
-            ],
+                Expanded(child: Text("Music title")),
+              ],
+            ),
           ),
           SizedBox(height: 20.0),
           SizedBox(
@@ -83,7 +88,7 @@ class _PlayerPageState extends State<PlayerPage>
             child: TabBarView(
               controller: _tabController,
               children: [
-                SingleChildScrollView(child: Text("Lyrics for the music")),
+                SingleChildScrollView(child: LyricsView()),
               ],
             ),
           ),

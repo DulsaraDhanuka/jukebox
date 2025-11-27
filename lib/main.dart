@@ -1,5 +1,7 @@
 import 'dart:io' show Platform;
 import 'package:flutter/material.dart';
+import 'package:jukebox/data/library_handler.dart';
+import 'package:jukebox/data/playback_handler.dart';
 import 'package:jukebox/views/desktop/desktop_scaffold.dart';
 import 'package:jukebox/views/mobile/mobile_scaffold.dart';
 import 'package:media_kit/media_kit.dart';
@@ -26,6 +28,8 @@ void main() async {
   }
 
   MediaKit.ensureInitialized();
+  LibraryHandler().initialize("/home/dulsara/Music/1");
+  PlaybackHandler().initialize();
 
   runApp(const MainApp());
 }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:jukebox/data/notifiers.dart';
-import 'package:media_kit/media_kit.dart';
+import 'package:jukebox/data/playback_handler.dart';
+import 'package:jukebox/views/desktop/pages/player_page.dart';
 
 class PlayerBar extends StatefulWidget {
   const PlayerBar({super.key});
@@ -10,66 +11,37 @@ class PlayerBar extends StatefulWidget {
 }
 
 class _PlayerBarState extends State<PlayerBar> {
-  late final player = Player();
-
   Duration audioDuration = Duration.zero;
   Duration currentPosition = Duration.zero;
   bool loop = false;
 
   @override
   void initState() {
-    playerNotifier.value = player;
-    player.setVolume(100.0);
-    player.stream.playing.listen((bool playing) {
-      setState(() {});
-    });
-    player.stream.completed.listen((_) async {
-      if (loop) {
-        await player.seek(Duration.zero);
-        await player.play();
-      }
-      setState(() {});
-    });
-
-    player.stream.error.listen((error) {
-      print("Player Error: $error");
-    });
-
-    player.stream.duration.listen((Duration duration) {
+    PlaybackHandler().onPlayerStarted((_, duration) {
       setState(() {
         audioDuration = duration;
       });
     });
 
-    player.stream.position.listen((Duration position) {
+    PlaybackHandler().onPlayerPositionChange((isPlaying, position) {
       setState(() {
         currentPosition = position;
       });
     });
 
-    musicFileNotifier.addListener(() async {
-      final filePath = musicFileNotifier.value;
-      if (filePath != null && filePath.isNotEmpty) {
-        if (player.state.playing) {
-          await player.stop();
-        }
-
-        await player.open(
-          Media(
-            filePath,
-          ),
-        );
-        setState(() {});
+    PlaybackHandler().onPlayerComplete(() async {
+      if (loop) {
+        await PlaybackHandler().player.seek(Duration.zero);
+        await PlaybackHandler().player.play();
       }
+      setState(() {});
+    });
+
+    PlaybackHandler().onPlayerError((error) {
+      print("Playback Error: $error");
     });
 
     super.initState();
-  }
-
-  @override
-  void dispose() {
-    player.dispose();
-    super.dispose();
   }
 
   @override
@@ -91,14 +63,14 @@ class _PlayerBarState extends State<PlayerBar> {
               backgroundColor: const Color(0xFF1ED760),
             ),
             icon: Icon(
-              player.state.playing ? Icons.pause : Icons.play_arrow,
+              PlaybackHandler().isPlaying() ? Icons.pause : Icons.play_arrow,
               color: Colors.black,
             ),
             onPressed: () async {
-              if (player.state.playing) {
-                await player.pause();
+              if (PlaybackHandler().isPlaying()) {
+                await PlaybackHandler().pause();
               } else {
-                await player.play();
+                await PlaybackHandler().play();
               }
             },
           ),
@@ -143,22 +115,33 @@ class _PlayerBarState extends State<PlayerBar> {
                     ),
                     child: Slider(
                       min: 0.0,
-                      max: audioDuration.inSeconds.toDouble(),
-                      value: currentPosition.inSeconds.toDouble().clamp(
+                      max: audioDuration.inMicroseconds.toDouble(),
+                      value: currentPosition.inMicroseconds.toDouble().clamp(
                         0.0,
-                        audioDuration.inSeconds.toDouble(),
+                        audioDuration.inMicroseconds.toDouble(),
                       ),
-                      divisions: audioDuration.inSeconds == 0
+                      divisions: audioDuration.inMicroseconds == 0
                           ? null
-                          : audioDuration.inSeconds,
+                          : audioDuration.inMicroseconds,
                       onChanged: (value) async {
-                        await player.seek(Duration(seconds: value.toInt()));
+                        await PlaybackHandler().seek(Duration(microseconds: value.toInt()));
                       },
                     ),
                   ),
                 ),
                 Text(audioDuration.toString().split('.').first.padLeft(8, '0')),
               ],
+            ),
+          ),
+          Expanded(
+            child: GestureDetector(
+              onTap: () {
+                if (currentPageNotifier.value is! PlayerPage) {
+                  currentPageNotifier.value = PlayerPage();
+                }
+                setState(() {});
+              },
+              child: Container(width: double.infinity, height: double.infinity, color: Colors.blue,),
             ),
           ),
           IconButton(
