@@ -61,6 +61,7 @@ class _PlayerPageState extends State<PlayerPage>
                       child: controller != null
                           ? Video(
                               controller: controller!,
+                              subtitleViewConfiguration: SubtitleViewConfiguration(visible: false),
                               controls: (state) {
                                 return const SizedBox.shrink();
                               },

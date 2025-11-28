@@ -14,10 +14,30 @@ class LibraryFile {
     required this.duration,
   });
 
-  File? getSrtFile() {
+  Future<File?> getSrtFile() async {
     File mediaFile = File(path);
-    File srtFile = File("${mediaFile.path}${p.basenameWithoutExtension(mediaFile.path)}.srt");
+    File srtFile = File(
+      "${mediaFile.parent.path}/${p.basenameWithoutExtension(mediaFile.path)}.srt",
+    );
 
-    return srtFile;
+    if (await srtFile.exists()) {
+    print("${mediaFile.parent.path}/${p.basenameWithoutExtension(mediaFile.path)}.srt");
+      return srtFile;
+    } else {
+      return null;
+    }
   }
+
+  @override
+  bool operator ==(Object other) {
+    return other is LibraryFile &&
+        other.libraryId == libraryId &&
+        other.path == path &&
+        other.duration == duration &&
+        other.title == title;
+  }
+
+  @override
+  int get hashCode =>
+      libraryId.hashCode ^ path.hashCode ^ duration.hashCode ^ title.hashCode;
 }

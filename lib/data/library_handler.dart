@@ -68,6 +68,7 @@ class LibraryHandler {
   Future<void> addFile(String filePath) async {
     File file = File(filePath);
     copyFileToLibrary(file);
+    String newFilePath = "$libraryPath/${p.basename(filePath)}";
     final stmt = database.prepare(
       'INSERT INTO files (title, duration, path) VALUES (?, ?, ?);',
     );
@@ -78,7 +79,7 @@ class LibraryHandler {
     final duration = (await tempPlayer.stream.duration.first).inMicroseconds;
     await tempPlayer.dispose();
 
-    stmt.execute([title, duration, filePath]);
+    stmt.execute([title, duration, newFilePath]);
     stmt.close();
   }
 

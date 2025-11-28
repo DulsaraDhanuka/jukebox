@@ -11,37 +11,42 @@ class PlayerBar extends StatefulWidget {
 }
 
 class _PlayerBarState extends State<PlayerBar> {
-  Duration audioDuration = Duration.zero;
+  Duration currentFileDuration = Duration.zero;
   Duration currentPosition = Duration.zero;
   bool loop = false;
 
+  void updateCurrentFileDuration() {
+    setState(() {
+      currentFileDuration = PlaybackHandler().currentFileDuration.value;
+    });
+  }
+
+  void updateCurrentPosition() {
+    setState(() {
+      currentPosition = PlaybackHandler().currentPosition.value;
+    });
+  }
+
+  void onPlayerStateChanged() async {
+    setState(() {});
+  }
+
   @override
   void initState() {
-    PlaybackHandler().onPlayerStarted((_, duration) {
-      setState(() {
-        audioDuration = duration;
-      });
-    });
-
-    PlaybackHandler().onPlayerPositionChange((isPlaying, position) {
-      setState(() {
-        currentPosition = position;
-      });
-    });
-
-    PlaybackHandler().onPlayerComplete(() async {
-      if (loop) {
-        await PlaybackHandler().player.seek(Duration.zero);
-        await PlaybackHandler().player.play();
-      }
-      setState(() {});
-    });
-
-    PlaybackHandler().onPlayerError((error) {
-      print("Playback Error: $error");
-    });
+    PlaybackHandler().currentFileDuration.addListener(updateCurrentFileDuration);
+    PlaybackHandler().currentPosition.addListener(updateCurrentPosition);
+    PlaybackHandler().state.addListener(onPlayerStateChanged);
 
     super.initState();
+  }
+
+  @override
+  void dispose() {
+    PlaybackHandler().currentFileDuration.removeListener(updateCurrentFileDuration);
+    PlaybackHandler().currentPosition.removeListener(updateCurrentPosition);
+    PlaybackHandler().state.removeListener(onPlayerStateChanged);
+
+    super.dispose();
   }
 
   @override
@@ -63,11 +68,11 @@ class _PlayerBarState extends State<PlayerBar> {
               backgroundColor: const Color(0xFF1ED760),
             ),
             icon: Icon(
-              PlaybackHandler().isPlaying() ? Icons.pause : Icons.play_arrow,
+              PlaybackHandler().state.value == PlaybackHandlerState.playing ? Icons.pause : Icons.play_arrow,
               color: Colors.black,
             ),
             onPressed: () async {
-              if (PlaybackHandler().isPlaying()) {
+              if (PlaybackHandler().state.value == PlaybackHandlerState.playing) {
                 await PlaybackHandler().pause();
               } else {
                 await PlaybackHandler().play();
@@ -82,16 +87,21 @@ class _PlayerBarState extends State<PlayerBar> {
             onPressed: () {},
             icon: const Icon(Icons.skip_next, color: Color(0xFF898989)),
           ),
-          IconButton(
-            onPressed: () {
-              setState(() {
-                loop = !loop;
-              });
-            },
-            icon: Icon(
-              Icons.loop,
-              color: loop ? Colors.white : Color(0xFF898989),
-            ),
+          ValueListenableBuilder(
+            valueListenable: PlaybackHandler().loopMode,
+            builder: (context, value, child) {
+              return IconButton(
+                onPressed: () {
+                  setState(() {
+                    PlaybackHandler().loopMode.value = PlaybackHandler().loopMode.value == PlaybackHandlerLoopMode.single ? PlaybackHandlerLoopMode.off : PlaybackHandlerLoopMode.single;
+                  });
+                },
+                icon: Icon(
+                  Icons.loop,
+                  color: PlaybackHandler().loopMode.value == PlaybackHandlerLoopMode.single ? Colors.white : Color(0xFF898989),
+                ),
+              );
+            }
           ),
           Expanded(
             child: Row(
@@ -115,21 +125,21 @@ class _PlayerBarState extends State<PlayerBar> {
                     ),
                     child: Slider(
                       min: 0.0,
-                      max: audioDuration.inMicroseconds.toDouble(),
+                      max: currentFileDuration.inMicroseconds.toDouble(),
                       value: currentPosition.inMicroseconds.toDouble().clamp(
                         0.0,
-                        audioDuration.inMicroseconds.toDouble(),
+                        currentFileDuration.inMicroseconds.toDouble(),
                       ),
-                      divisions: audioDuration.inMicroseconds == 0
+                      divisions: currentFileDuration.inMicroseconds == 0
                           ? null
-                          : audioDuration.inMicroseconds,
+                          : currentFileDuration.inMicroseconds,
                       onChanged: (value) async {
                         await PlaybackHandler().seek(Duration(microseconds: value.toInt()));
                       },
                     ),
                   ),
                 ),
-                Text(audioDuration.toString().split('.').first.padLeft(8, '0')),
+                Text(currentFileDuration.toString().split('.').first.padLeft(8, '0')),
               ],
             ),
           ),
