@@ -43,7 +43,7 @@ class _LyricsViewState extends State<LyricsView> {
   }
 
   void onNewFileSelected() async {
-    LibraryFile? currentFile = PlaybackHandler().currentFile.value;
+    LibraryFile? currentFile = PlaybackHandler().queue.currentFile.value;
 
     if (currentFile != null) {
       File? srtFile = await currentFile.getSrtFile();
@@ -87,14 +87,14 @@ class _LyricsViewState extends State<LyricsView> {
   void initState() {
     onNewFileSelected();
 
-    PlaybackHandler().currentFile.addListener(onNewFileSelected);
+    PlaybackHandler().queue.currentFile.addListener(onNewFileSelected);
     PlaybackHandler().currentPosition.addListener(onPlayerPositionChange);
     super.initState();
   }
 
   @override
   void dispose() {
-    PlaybackHandler().currentFile.removeListener(onNewFileSelected);
+    PlaybackHandler().queue.currentFile.removeListener(onNewFileSelected);
     PlaybackHandler().currentPosition.removeListener(onPlayerPositionChange);
     super.dispose();
   }
