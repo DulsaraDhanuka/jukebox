@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:jukebox/data/notifiers.dart';
 import 'package:jukebox/views/desktop/pages/player_page.dart';
 import 'package:jukebox/views/desktop/widgets/player_bar.dart';
+import 'package:jukebox/views/desktop/widgets/queue_view.dart';
 
 import 'widgets/menu.dart';
 import 'widgets/sidebar.dart';
@@ -32,21 +33,34 @@ class DesktopScaffold extends StatelessWidget {
                     child: Column(
                       children: [
                         Expanded(
-                          child: Container(
-                            decoration: BoxDecoration(
-                              border: BoxBorder.all(
-                                color: const Color(0xFF202020),
-                                width: 1,
-                              ),
-                              borderRadius: BorderRadius.circular(10.0),
-                            ),
-                            clipBehavior: Clip.hardEdge,
-                            child: ValueListenableBuilder(
-                              valueListenable: currentPageNotifier,
-                              builder: (context, currentPage, child) {
-                                return currentPage ?? PlayerPage();
-                              }
-                            ),
+                          child: ValueListenableBuilder(
+                            valueListenable: isQueueVisibleNotifier,
+                            builder: (context, isQueueVisible, child) {
+                              return Stack(
+                                alignment: AlignmentGeometry.centerRight,
+                                children: [
+                                  Container(
+                                    decoration: BoxDecoration(
+                                      border: BoxBorder.all(
+                                        color: const Color(0xFF202020),
+                                        width: 1,
+                                      ),
+                                      borderRadius: BorderRadius.circular(10.0),
+                                    ),
+                                    clipBehavior: Clip.hardEdge,
+                                    child: ValueListenableBuilder(
+                                      valueListenable: currentPageNotifier,
+                                      builder: (context, currentPage, child) {
+                                        return currentPage ?? PlayerPage();
+                                      },
+                                    ),
+                                  ),
+                                  if (isQueueVisible) ... [
+                                    QueueView(),
+                                  ]
+                                ],
+                              );
+                            }
                           ),
                         ),
                         SizedBox(height: 4.0),

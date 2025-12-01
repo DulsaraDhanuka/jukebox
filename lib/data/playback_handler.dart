@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:jukebox/data/library_file.dart';
+import 'package:jukebox/data/playback_queue_item.dart';
+import 'package:jukebox/utils.dart';
 import 'package:media_kit/media_kit.dart';
 
 enum PlaybackHandlerState { playing, paused, completed, error }
 
 enum PlaybackHandlerLoopMode { off, single, queue }
 
-class PlaybackQueueNotifier extends ValueNotifier<List<LibraryFile>> {
+class PlaybackQueueNotifier extends ValueNotifier<List<PlaybackQueueItem>> {
   PlaybackQueueNotifier(super.value);
 
   void notifyAll() {
@@ -15,35 +17,56 @@ class PlaybackQueueNotifier extends ValueNotifier<List<LibraryFile>> {
 }
 
 class PlaybackQueue {
-  @protected
   int _currentIndex = 0;
-  @protected
-  final List<LibraryFile> _files = [];
+  final List<PlaybackQueueItem> _queueItems = [];
 
-  late final PlaybackQueueNotifier notifier = PlaybackQueueNotifier(_files);
-  final ValueNotifier<LibraryFile?> currentFile = ValueNotifier(null);
+  late final PlaybackQueueNotifier notifier = PlaybackQueueNotifier(_queueItems);
+  final ValueNotifier<PlaybackQueueItem?> currentQueueItem = ValueNotifier(null);
 
   void add(LibraryFile file) {
-    _files.add(file);
+    _queueItems.add(PlaybackQueueItem(id: getRandomString(10), file: file));
     notifier.notifyAll();
 
-    if (_files.length == 1) {
+    if (_queueItems.length == 1) {
       _currentIndex = 0;
-      currentFile.value = _files[_currentIndex];
+      currentQueueItem.value = _queueItems[_currentIndex];
     }
-    print(_files);
+  }
+
+  void remove(int index) {
+    _queueItems.removeAt(index);
+    notifier.notifyAll();
+
+    if (_currentIndex >= _queueItems.length) {
+      _currentIndex = _queueItems.length - 1;
+    }
+    currentQueueItem.value = _queueItems.isNotEmpty ? _queueItems[_currentIndex] : null;
   }
 
   void next(bool loop) {
-    if (_currentIndex == _files.length - 1) {
+    if (_currentIndex == _queueItems.length - 1) {
       if (loop) {
         _currentIndex = 0;
-        currentFile.value = _files[_currentIndex];
+        currentQueueItem.value = _queueItems[_currentIndex];
+      } else {
+        _currentIndex = -1;
+        currentQueueItem.value = null;
       }
     } else {
       _currentIndex += 1;
-      currentFile.value = _files[_currentIndex];
+      currentQueueItem.value = _queueItems[_currentIndex];
     }
+  }
+
+  void setIndex(int index) {
+    if (index >= 0 && index < _queueItems.length) {
+      _currentIndex = index;
+      currentQueueItem.value = _queueItems[_currentIndex];
+    }
+  }
+
+  int getCurrentIndex() {
+    return _currentIndex;
   }
 }
 
@@ -80,13 +103,18 @@ class PlaybackHandler {
     });
 
     player.stream.completed.listen((_) async {
+      if (state.value == PlaybackHandlerState.error || state.value == PlaybackHandlerState.completed) {
+        return;
+      }
+
       state.value = PlaybackHandlerState.completed;
 
-      if (loopMode.value == PlaybackHandlerLoopMode.single && queue.currentFile.value != null) {
-        await player.open(Media(queue.currentFile.value!.path));
+      if (loopMode.value == PlaybackHandlerLoopMode.single && queue.currentQueueItem.value != null) {
+        await player.open(Media(queue.currentQueueItem.value!.file.path));
         state.value = PlaybackHandlerState.playing;
       } else {
         queue.next(loopMode.value == PlaybackHandlerLoopMode.queue);
+        play();
       }
     });
 
@@ -95,16 +123,15 @@ class PlaybackHandler {
       state.value = PlaybackHandlerState.error;
     });
 
-    queue.currentFile.addListener(() async {
-      if (queue.currentFile.value != null) {
-        await player.open(Media(queue.currentFile.value!.path));
+    queue.currentQueueItem.addListener(() async {
+      if (queue.currentQueueItem.value != null) {
+        await player.open(Media(queue.currentQueueItem.value!.file.path));
         state.value = PlaybackHandlerState.playing;
+      } else {
+        state.value = PlaybackHandlerState.completed;
+        await player.stop();
       }
     });
-  }
-
-  Future<void> addToQueue(LibraryFile file) async {
-    queue.add(file);
   }
 
   Future<void> play() async {

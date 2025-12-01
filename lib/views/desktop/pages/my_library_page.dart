@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:jukebox/data/library_file.dart';
 import 'package:jukebox/data/library_handler.dart';
 import 'package:jukebox/data/playback_handler.dart';
+import 'package:jukebox/data/playback_queue_item.dart';
 
 class MyLibraryPage extends StatefulWidget {
   const MyLibraryPage({super.key});
@@ -12,22 +13,37 @@ class MyLibraryPage extends StatefulWidget {
 }
 
 class _MyLibraryPageState extends State<MyLibraryPage> {
+  PlaybackQueueItem? currentQueueItem;
   List<LibraryFile> files = [];
+
+  void onCurrentQueueItemChanged() {
+    setState(() {
+      currentQueueItem = PlaybackHandler().queue.currentQueueItem.value;
+    });
+  }
 
   @override
   void initState() {
     files = LibraryHandler().getFiles();
+    PlaybackHandler().queue.currentQueueItem.addListener(onCurrentQueueItemChanged);
+    currentQueueItem = PlaybackHandler().queue.currentQueueItem.value;
     super.initState();
+  }
+
+  @override
+  void dispose() {
+    PlaybackHandler().queue.currentQueueItem.removeListener(onCurrentQueueItemChanged);
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     List<DataRow> dataRows = files.map((file) {
       return DataRow(
+        selected: currentQueueItem?.file == file,
         onSelectChanged: (value) {
           if (value == true) {
-            PlaybackHandler().addToQueue(file);
-            PlaybackHandler().play();
+            PlaybackHandler().queue.add(file);
           }
         },
         cells: [

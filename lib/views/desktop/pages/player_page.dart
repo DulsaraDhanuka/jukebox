@@ -70,7 +70,12 @@ class _PlayerPageState extends State<PlayerPage>
                     ),
                   ),
                 ),
-                Expanded(child: Text("Music title")),
+                Expanded(child: ValueListenableBuilder(
+                  valueListenable: PlaybackHandler().queue.currentQueueItem,
+                  builder: (context, currentQueueItem, child) {
+                    return Text(currentQueueItem?.file.title ?? "No file playing");
+                  }
+                )),
               ],
             ),
           ),

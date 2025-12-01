@@ -54,7 +54,6 @@ class LibraryHandler {
   Future<void> addFiles(List<String> filePaths) async {
     for (final filePath in filePaths) {
       final String mimeType = lookupMimeType(filePath) ?? '';
-      print(mimeType);
 
       if (mimeType.startsWith('audio/') || 
           mimeType.startsWith('video/')) {
@@ -68,7 +67,7 @@ class LibraryHandler {
   Future<void> addFile(String filePath) async {
     File file = File(filePath);
     copyFileToLibrary(file);
-    String newFilePath = "$libraryPath/${p.basename(filePath)}";
+    String newFilePath = p.basename(filePath);
     final stmt = database.prepare(
       'INSERT INTO files (title, duration, path) VALUES (?, ?, ?);',
     );
@@ -99,9 +98,9 @@ class LibraryHandler {
     for (final Row row in resultSet) {
       files.add(
         LibraryFile(
-          libraryId: row['id'],
+          id: row['id'],
           title: row['title'],
-          path: row['path'],
+          path: '$libraryPath/${row['path']}',
           duration: Duration(microseconds: row['duration']),
         ),
       );

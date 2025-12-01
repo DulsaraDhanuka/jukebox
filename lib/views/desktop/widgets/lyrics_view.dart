@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:jukebox/data/library_file.dart';
 import 'package:jukebox/data/playback_handler.dart';
 import 'package:collection/collection.dart';
+import 'package:jukebox/data/playback_queue_item.dart';
 import 'package:path/path.dart' as p;
 
 class DurationRange {
@@ -42,10 +43,11 @@ class _LyricsViewState extends State<LyricsView> {
     );
   }
 
-  void onNewFileSelected() async {
-    LibraryFile? currentFile = PlaybackHandler().queue.currentFile.value;
+  void onCurrentQueueItemChanged() async {
+    PlaybackQueueItem? currentQueueItem = PlaybackHandler().queue.currentQueueItem.value;
 
-    if (currentFile != null) {
+    if (currentQueueItem != null) {
+      LibraryFile currentFile = currentQueueItem.file;
       File? srtFile = await currentFile.getSrtFile();
       if (srtFile != null) {
         List<String> srtParts = (await srtFile.readAsString()).split("\n\n");
@@ -85,16 +87,16 @@ class _LyricsViewState extends State<LyricsView> {
 
   @override
   void initState() {
-    onNewFileSelected();
+    onCurrentQueueItemChanged();
 
-    PlaybackHandler().queue.currentFile.addListener(onNewFileSelected);
+    PlaybackHandler().queue.currentQueueItem.addListener(onCurrentQueueItemChanged);
     PlaybackHandler().currentPosition.addListener(onPlayerPositionChange);
     super.initState();
   }
 
   @override
   void dispose() {
-    PlaybackHandler().queue.currentFile.removeListener(onNewFileSelected);
+    PlaybackHandler().queue.currentQueueItem.removeListener(onCurrentQueueItemChanged);
     PlaybackHandler().currentPosition.removeListener(onPlayerPositionChange);
     super.dispose();
   }

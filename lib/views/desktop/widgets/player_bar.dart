@@ -13,7 +13,6 @@ class PlayerBar extends StatefulWidget {
 class _PlayerBarState extends State<PlayerBar> {
   Duration currentFileDuration = Duration.zero;
   Duration currentPosition = Duration.zero;
-  bool loop = false;
 
   void updateCurrentFileDuration() {
     setState(() {
@@ -33,7 +32,9 @@ class _PlayerBarState extends State<PlayerBar> {
 
   @override
   void initState() {
-    PlaybackHandler().currentFileDuration.addListener(updateCurrentFileDuration);
+    PlaybackHandler().currentFileDuration.addListener(
+      updateCurrentFileDuration,
+    );
     PlaybackHandler().currentPosition.addListener(updateCurrentPosition);
     PlaybackHandler().state.addListener(onPlayerStateChanged);
 
@@ -42,7 +43,9 @@ class _PlayerBarState extends State<PlayerBar> {
 
   @override
   void dispose() {
-    PlaybackHandler().currentFileDuration.removeListener(updateCurrentFileDuration);
+    PlaybackHandler().currentFileDuration.removeListener(
+      updateCurrentFileDuration,
+    );
     PlaybackHandler().currentPosition.removeListener(updateCurrentPosition);
     PlaybackHandler().state.removeListener(onPlayerStateChanged);
 
@@ -68,12 +71,22 @@ class _PlayerBarState extends State<PlayerBar> {
               backgroundColor: const Color(0xFF1ED760),
             ),
             icon: Icon(
-              PlaybackHandler().state.value == PlaybackHandlerState.playing ? Icons.pause : Icons.play_arrow,
+              PlaybackHandler().state.value == PlaybackHandlerState.playing
+                  ? Icons.pause
+                  : Icons.play_arrow,
               color: Colors.black,
             ),
             onPressed: () async {
-              if (PlaybackHandler().state.value == PlaybackHandlerState.playing) {
+              if (PlaybackHandler().state.value ==
+                  PlaybackHandlerState.playing) {
                 await PlaybackHandler().pause();
+              } else if (PlaybackHandler().state.value ==
+                  PlaybackHandlerState.completed) {
+                PlaybackHandler().queue.next(
+                  PlaybackHandler().loopMode.value ==
+                      PlaybackHandlerLoopMode.queue,
+                );
+                await PlaybackHandler().play();
               } else {
                 await PlaybackHandler().play();
               }
@@ -93,15 +106,33 @@ class _PlayerBarState extends State<PlayerBar> {
               return IconButton(
                 onPressed: () {
                   setState(() {
-                    PlaybackHandler().loopMode.value = PlaybackHandler().loopMode.value == PlaybackHandlerLoopMode.single ? PlaybackHandlerLoopMode.off : PlaybackHandlerLoopMode.single;
+                    if (PlaybackHandler().loopMode.value ==
+                        PlaybackHandlerLoopMode.off) {
+                      PlaybackHandler().loopMode.value =
+                          PlaybackHandlerLoopMode.queue;
+                    } else if (PlaybackHandler().loopMode.value ==
+                        PlaybackHandlerLoopMode.queue) {
+                      PlaybackHandler().loopMode.value =
+                          PlaybackHandlerLoopMode.single;
+                    } else {
+                      PlaybackHandler().loopMode.value =
+                          PlaybackHandlerLoopMode.off;
+                    }
                   });
                 },
                 icon: Icon(
-                  Icons.loop,
-                  color: PlaybackHandler().loopMode.value == PlaybackHandlerLoopMode.single ? Colors.white : Color(0xFF898989),
+                  PlaybackHandler().loopMode.value ==
+                          PlaybackHandlerLoopMode.single
+                      ? Icons.repeat_one_rounded
+                      : Icons.repeat_rounded,
+                  color:
+                      PlaybackHandler().loopMode.value ==
+                          PlaybackHandlerLoopMode.off
+                      ? Color(0xFF898989)
+                      : Colors.white,
                 ),
               );
-            }
+            },
           ),
           Expanded(
             child: Row(
@@ -134,12 +165,20 @@ class _PlayerBarState extends State<PlayerBar> {
                           ? null
                           : currentFileDuration.inMicroseconds,
                       onChanged: (value) async {
-                        await PlaybackHandler().seek(Duration(microseconds: value.toInt()));
+                        await PlaybackHandler().seek(
+                          Duration(microseconds: value.toInt()),
+                        );
                       },
                     ),
                   ),
                 ),
-                Text(currentFileDuration.toString().split('.').first.padLeft(8, '0')),
+                Text(
+                  currentFileDuration
+                      .toString()
+                      .split('.')
+                      .first
+                      .padLeft(8, '0'),
+                ),
               ],
             ),
           ),
@@ -151,16 +190,57 @@ class _PlayerBarState extends State<PlayerBar> {
                 }
                 setState(() {});
               },
-              child: Container(width: double.infinity, height: double.infinity, color: Colors.blue,),
+              child: ValueListenableBuilder(
+                valueListenable: PlaybackHandler().queue.currentQueueItem,
+                builder: (_, currentQueueItem, _) {
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 10.0),
+                    child: Row(
+                        spacing: 8.0,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Container(
+                            width: 50,
+                            height: 50,
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF555555),
+                              borderRadius: BorderRadius.circular(5.0),
+                            ),
+                          ),
+                          Expanded(
+                            child: Text(
+                              currentQueueItem != null
+                                  ? currentQueueItem.file.title
+                                  : "",
+                              textAlign: TextAlign.left,
+                              overflow: TextOverflow.ellipsis,
+                              maxLines: 2,
+                            ),
+                          ),
+                        ],
+                      ),
+                  );
+                },
+              ),
             ),
           ),
           IconButton(
             onPressed: () {},
             icon: const Icon(Icons.playlist_add, color: Color(0xFF898989)),
           ),
-          IconButton(
-            onPressed: () {},
-            icon: const Icon(Icons.playlist_play, color: Color(0xFF898989)),
+          ValueListenableBuilder(
+            valueListenable: isQueueVisibleNotifier,
+            builder: (context, isQueueVisible, child) {
+              return IconButton(
+                onPressed: () {
+                  isQueueVisibleNotifier.value = !isQueueVisible;
+                },
+                icon: Icon(
+                  Icons.playlist_play,
+                  color: isQueueVisible ? Colors.white : Color(0xFF898989),
+                ),
+              );
+            },
           ),
         ],
       ),
