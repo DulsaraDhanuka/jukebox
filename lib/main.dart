@@ -1,5 +1,6 @@
 import 'dart:io' show Platform;
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:jukebox/data/library_handler.dart';
 import 'package:jukebox/data/playback_handler.dart';
 import 'package:jukebox/views/desktop/desktop_scaffold.dart';
@@ -31,7 +32,7 @@ void main() async {
   LibraryHandler().initialize("/home/dulsara/Music/1");
   PlaybackHandler().initialize();
 
-  runApp(const MainApp());
+  runApp(const ProviderScope(child: MainApp()));
 }
 
 class MainApp extends StatefulWidget {

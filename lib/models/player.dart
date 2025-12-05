@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:jukebox/models/player_queue.dart';
 
 enum PlayerState { completed, playing, paused, error }
 enum PlayerLoopMode { off, single, queue }
