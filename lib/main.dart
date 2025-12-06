@@ -1,18 +1,18 @@
-import 'dart:io' show Platform;
+import 'dart:developer';
+import 'dart:io';
+
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:jukebox/data/library_handler.dart';
-import 'package:jukebox/data/playback_handler.dart';
-import 'package:jukebox/views/desktop/desktop_scaffold.dart';
-import 'package:jukebox/views/mobile/mobile_scaffold.dart';
+import 'package:hydrated_bloc/hydrated_bloc.dart';
+import 'package:jukebox/app.dart';
 import 'package:media_kit/media_kit.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:window_manager/window_manager.dart';
 
-void main() async {
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
-    // Must add this line.
     await windowManager.ensureInitialized();
 
     WindowOptions windowOptions = WindowOptions(
@@ -20,7 +20,7 @@ void main() async {
       center: true,
       backgroundColor: Colors.transparent,
       skipTaskbar: false,
-      titleBarStyle: TitleBarStyle.hidden,
+      // titleBarStyle: TitleBarStyle.hidden,
     );
     windowManager.waitUntilReadyToShow(windowOptions, () async {
       await windowManager.show();
@@ -29,38 +29,23 @@ void main() async {
   }
 
   MediaKit.ensureInitialized();
-  LibraryHandler().initialize("/home/dulsara/Music/1");
-  PlaybackHandler().initialize();
 
-  runApp(const ProviderScope(child: MainApp()));
-}
+  FlutterError.onError = (details) {
+    log(details.exceptionAsString(), stackTrace: details.stack);
+  };
 
-class MainApp extends StatefulWidget {
-  const MainApp({super.key});
+  PlatformDispatcher.instance.onError = (error, stack) {
+    log(error.toString(), stackTrace: stack);
+    return true;
+  };
 
-  @override
-  State<MainApp> createState() => _MainAppState();
-}
+  // Bloc.observer = const AppBlocObserver();
 
-class _MainAppState extends State<MainApp> {
-  @override
-  Widget build(BuildContext context) {
-    Widget scaffold = DesktopScaffold();
-    if (MediaQuery.of(context).orientation == Orientation.portrait &&
-        (Platform.isAndroid || Platform.isIOS)) {
-      scaffold = MobileScaffold();
-    }
+  HydratedBloc.storage = await HydratedStorage.build(
+    storageDirectory: kIsWeb
+        ? HydratedStorageDirectory.web
+        : HydratedStorageDirectory((await getTemporaryDirectory()).path),
+  );
 
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: Colors.blue,
-          brightness: Brightness.dark,
-        ),
-        useMaterial3: true,
-      ),
-      home: scaffold,
-    );
-  }
+  runApp(App());
 }
