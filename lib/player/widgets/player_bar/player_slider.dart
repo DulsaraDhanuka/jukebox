@@ -35,15 +35,12 @@ class PlayerSlider extends StatelessWidget {
             child: Slider(
               min: 0.0,
               max: state.duration.inMicroseconds.toDouble(),
-              value: state.position.inMicroseconds.toDouble().clamp(
-                0.0,
-                state.duration.inMicroseconds.toDouble(),
-              ),
+              value: state.position.inMicroseconds.toDouble(),
               divisions: state.duration.inMicroseconds == 0
                   ? null
                   : state.duration.inMicroseconds,
               onChanged: (value) async {
-                context.read<PlayerBloc>().add(PlayerSeekRequested(Duration(microseconds: value.toInt())));
+                context.read<PlayerBloc>().add(PlayerSeek(Duration(microseconds: value.toInt())));
               },
             ),
           ),

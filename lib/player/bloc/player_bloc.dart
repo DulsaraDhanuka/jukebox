@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math';
 
 import 'package:equatable/equatable.dart';
 import 'package:hydrated_bloc/hydrated_bloc.dart';
@@ -13,86 +14,120 @@ class PlayerBloc extends HydratedBloc<PlayerEvent, PlayerState> {
   PlayerBloc({required PlayerService playerService})
     : _playerService = playerService,
       super(const PlayerState()) {
-        on<PlayerSubscriptionRequsted>(_onSubscriptionRequested);
-        on<_PlayerStatusChanged>(_onStatusChanged);
-        on<_PlayerDurationChanged>(_onDurationChanged);
-        on<_PlayerPositionChanged>(_onPositionChanged);
-        on<_PlayerVolumeChanged>(_onVolumeChanged);
-        on<PlayerPauseRequested>(_onPauseRequested);
-        on<PlayerResumeRequested>(_onResumeRequested);
-        on<PlayerStopRequested>(_onStopRequested);
-        on<PlayerVolumeChangeRequested>(_onVolumeChangeRequested);
-        on<PlayerSeekRequested>(_onSeekRequested);
-        on<PlayerOpenFileRequested>(_onOpenFileRequested);
-      }
+    on<PlayerSubscribe>(_onSubscribe);
+    on<PlayerPause>(_onPause);
+    on<PlayerResume>(_onResume);
+    on<PlayerStop>(_onStop);
+    on<PlayerChangeVolume>(_onChangeVolume);
+    on<PlayerSeek>(_onSeek);
+
+    on<PlayerAddToQueue>(_onAddToQueue);
+    on<PlayerNext>(_onNext);
+    on<PlayerPrevious>(_onPrevious);
+  }
 
   final PlayerService _playerService;
+  StreamController<int> currentQueueIndexController = StreamController<int>.broadcast();
 
-  Future<void> _onSubscriptionRequested(PlayerSubscriptionRequsted event, Emitter<PlayerState> emit) async {
-    _playerService.getStatus().listen((status) => add(_PlayerStatusChanged(status.toPlayerStatus())));
-    _playerService.getDuration().listen((duration) => add(_PlayerDurationChanged(duration)));
-    _playerService.getPosition().listen((position) => add(_PlayerPositionChanged(position)));
-    _playerService.getVolume().listen((volume) => add(_PlayerVolumeChanged(volume)));
+  Future<void> _onSubscribe(
+    PlayerSubscribe event,
+    Emitter<PlayerState> emit,
+  ) async {
+    _playerService.getStatus().listen((status) {
+      final newStatus = status.toPlayerStatus();
+      emit(state.copyWith(status: newStatus));
+
+      if (newStatus == PlayerStatus.completed) {
+        add(PlayerNext());
+      }
+    });
+    _playerService.getDuration().listen(
+      (duration) => emit(state.copyWith(duration: duration)),
+    );
+    _playerService.getPosition().listen(
+      (position) => emit(state.copyWith(position: position)),
+    );
+    _playerService.getVolume().listen(
+      (volume) => emit(state.copyWith(volume: volume)),
+    );
+    await emit.forEach<int>(currentQueueIndexController.stream, onData: (currentQueueIndex) {
+      if (currentQueueIndex != -1) {
+        final prevStatus = state.status;
+        _playerService.play().whenComplete(() async {
+          await _playerService.open(state.queue[currentQueueIndex]);
+          if (prevStatus == PlayerStatus.playing) {
+            await _playerService.play();
+          }
+        });
+      }
+
+      return state.copyWith(currentQueueIndex: currentQueueIndex);
+    });
   }
 
-  Future<void> _onStatusChanged(_PlayerStatusChanged event, Emitter<PlayerState> emit) async {
-    emit(state.copyWith(status: event.status ));
-  }
-
-  Future<void> _onDurationChanged(_PlayerDurationChanged event, Emitter<PlayerState> emit) async {
-    emit(state.copyWith(duration: event.duration ));
-  }
-
-  Future<void> _onPositionChanged(_PlayerPositionChanged event, Emitter<PlayerState> emit) async {
-    emit(state.copyWith(position: event.position ));
-  }
-
-  Future<void> _onVolumeChanged(_PlayerVolumeChanged event, Emitter<PlayerState> emit) async {
-    emit(state.copyWith(volume: event.volume ));
-  }
-
-  Future<void> _onPauseRequested(PlayerPauseRequested event, Emitter<PlayerState> emit) async {
+  Future<void> _onPause(PlayerPause event, Emitter<PlayerState> emit) async {
     await _playerService.pause();
   }
 
-  Future<void> _onResumeRequested(PlayerResumeRequested event, Emitter<PlayerState> emit) async {
-    await _playerService.play();
+  Future<void> _onResume(PlayerResume event, Emitter<PlayerState> emit) async {
+    if (state.currentQueueIndex == -1 && state.queue.isNotEmpty) {
+      currentQueueIndexController.add(0);
+    } else if (state.currentQueueIndex != -1) {
+      await _playerService.play();
+    }
   }
 
-  Future<void> _onStopRequested(PlayerStopRequested event, Emitter<PlayerState> emit) async {
+  Future<void> _onStop(PlayerStop event, Emitter<PlayerState> emit) async {
     await _playerService.stop();
   }
 
-  Future<void> _onVolumeChangeRequested(PlayerVolumeChangeRequested event, Emitter<PlayerState> emit) async {
+  Future<void> _onChangeVolume(
+    PlayerChangeVolume event,
+    Emitter<PlayerState> emit,
+  ) async {
     await _playerService.setVolume(event.volume);
   }
 
-  Future<void> _onSeekRequested(PlayerSeekRequested event, Emitter<PlayerState> emit) async {
+  Future<void> _onSeek(PlayerSeek event, Emitter<PlayerState> emit) async {
     await _playerService.seek(event.position);
   }
-  
-  Future<void> _onOpenFileRequested(PlayerOpenFileRequested event, Emitter<PlayerState> emit) async {
-    await _playerService.open(event.filePath);
-    emit(state.copyWith(filePath: event.filePath));
+
+  Future<void> _onAddToQueue(
+    PlayerAddToQueue event,
+    Emitter<PlayerState> emit,
+  ) async {
+    emit(state.copyWith(queue: [...state.queue, event.filePath]));
+    print(state.queue);
+  }
+
+  Future<void> _onNext(PlayerNext event, Emitter<PlayerState> emit) async {
+    currentQueueIndexController.add(min(state.currentQueueIndex + 1, state.queue.length));
+  }
+
+  Future<void> _onPrevious(
+    PlayerPrevious event,
+    Emitter<PlayerState> emit,
+  ) async {
+    currentQueueIndexController.add(max(state.currentQueueIndex - 1, 0));
   }
 
   @override
   PlayerState? fromJson(Map<String, dynamic> json) {
     final prevState = PlayerState.fromJson(json);
-    switch(prevState.status) {
+    switch (prevState.status) {
       case PlayerStatus.stopped:
         break;
       case PlayerStatus.completed:
-        _playerService.open(prevState.filePath).whenComplete(() async {
+        _playerService.open(prevState.queue[prevState.currentQueueIndex]).whenComplete(() async {
           _playerService.seek(prevState.duration);
         });
       case PlayerStatus.playing:
-        _playerService.open(prevState.filePath).whenComplete(() async {
+        _playerService.open(prevState.queue[prevState.currentQueueIndex]).whenComplete(() async {
           await _playerService.seek(prevState.position);
           await _playerService.play();
         });
       case PlayerStatus.paused:
-        _playerService.open(prevState.filePath).whenComplete(() async {
+        _playerService.open(prevState.queue[prevState.currentQueueIndex]).whenComplete(() async {
           _playerService.seek(prevState.position);
         });
       case PlayerStatus.error:

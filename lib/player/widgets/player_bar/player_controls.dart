@@ -22,7 +22,7 @@ class PlayerControls extends StatelessWidget {
                   ),
                   icon: Icon(Icons.play_arrow, color: Colors.black),
                   onPressed: () async {
-                    context.read<PlayerBloc>().add(PlayerResumeRequested());
+                    context.read<PlayerBloc>().add(PlayerResume());
                   },
                 );
               case PlayerStatus.playing:
@@ -32,7 +32,7 @@ class PlayerControls extends StatelessWidget {
                   ),
                   icon: Icon(Icons.pause, color: Colors.black),
                   onPressed: () async {
-                    context.read<PlayerBloc>().add(PlayerPauseRequested());
+                    context.read<PlayerBloc>().add(PlayerPause());
                   },
                 );
             }
@@ -40,11 +40,15 @@ class PlayerControls extends StatelessWidget {
           buildWhen: (previous, current) => previous.status != current.status,
         ),
         IconButton(
-          onPressed: () {},
+          onPressed: () {
+            context.read<PlayerBloc>().add(PlayerPrevious());
+          },
           icon: const Icon(Icons.skip_previous, color: Color(0xFF898989)),
         ),
         IconButton(
-          onPressed: () {},
+          onPressed: () {
+            context.read<PlayerBloc>().add(PlayerNext());
+          },
           icon: const Icon(Icons.skip_next, color: Color(0xFF898989)),
         ),
         IconButton(

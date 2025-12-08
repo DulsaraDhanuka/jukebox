@@ -7,44 +7,24 @@ sealed class PlayerEvent extends Equatable {
   List<Object> get props => [];
 }
 
-final class PlayerSubscriptionRequsted extends PlayerEvent {
-  const PlayerSubscriptionRequsted();
+final class PlayerSubscribe extends PlayerEvent {
+  const PlayerSubscribe();
 }
 
-final class _PlayerStatusChanged extends PlayerEvent {
-  final PlayerStatus status;
-  const _PlayerStatusChanged(this.status);
+final class PlayerPause extends PlayerEvent {
+  const PlayerPause();
 }
 
-final class _PlayerPositionChanged extends PlayerEvent {
-  final Duration position;
-  const _PlayerPositionChanged(this.position);
+final class PlayerResume extends PlayerEvent {
+  const PlayerResume();
 }
 
-final class _PlayerDurationChanged extends PlayerEvent {
-  final Duration duration;
-  const _PlayerDurationChanged(this.duration);
+final class PlayerStop extends PlayerEvent {
+  const PlayerStop();
 }
 
-final class _PlayerVolumeChanged extends PlayerEvent {
-  final double volume;
-  const _PlayerVolumeChanged(this.volume);
-}
-
-final class PlayerPauseRequested extends PlayerEvent {
-  const PlayerPauseRequested();
-}
-
-final class PlayerResumeRequested extends PlayerEvent {
-  const PlayerResumeRequested();
-}
-
-final class PlayerStopRequested extends PlayerEvent {
-  const PlayerStopRequested();
-}
-
-final class PlayerVolumeChangeRequested extends PlayerEvent {
-  const PlayerVolumeChangeRequested(this.volume);
+final class PlayerChangeVolume extends PlayerEvent {
+  const PlayerChangeVolume(this.volume);
 
   final double volume;
 
@@ -52,8 +32,8 @@ final class PlayerVolumeChangeRequested extends PlayerEvent {
   List<Object> get props => [volume];
 }
 
-final class PlayerSeekRequested extends PlayerEvent {
-  const PlayerSeekRequested(this.position);
+final class PlayerSeek extends PlayerEvent {
+  const PlayerSeek(this.position);
 
   final Duration position;
 
@@ -61,11 +41,19 @@ final class PlayerSeekRequested extends PlayerEvent {
   List<Object> get props => [position];
 }
 
-final class PlayerOpenFileRequested extends PlayerEvent {
-  const PlayerOpenFileRequested(this.filePath);
+final class PlayerAddToQueue extends PlayerEvent {
+  const PlayerAddToQueue(this.filePath);
 
   final String filePath;
 
   @override
   List<Object> get props => [filePath];
+}
+
+final class PlayerNext extends PlayerEvent {
+  const PlayerNext();
+}
+
+final class PlayerPrevious extends PlayerEvent {
+  const PlayerPrevious();
 }

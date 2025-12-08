@@ -1,12 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:jukebox/data/notifiers.dart';
-import 'package:jukebox/data/playback_handler.dart';
-import 'package:jukebox/player/bloc/player_bloc.dart';
 import 'package:jukebox/player/widgets/player_bar/player_controls.dart';
 import 'package:jukebox/player/widgets/player_bar/player_slider.dart';
-import 'package:jukebox/views/desktop/pages/player_page.dart';
-import 'package:player_service/player_service.dart';
 
 class PlayerBar extends StatelessWidget {
   const PlayerBar({super.key});

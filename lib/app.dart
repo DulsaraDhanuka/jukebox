@@ -20,7 +20,7 @@ class App extends StatelessWidget {
       child: BlocProvider(
         create: (context) =>
             PlayerBloc(playerService: context.read<PlayerService>())
-              ..add(const PlayerSubscriptionRequsted()),
+              ..add(const PlayerSubscribe()),
         child: const AppView(),
       ),
     );
@@ -60,8 +60,23 @@ class DesktopScaffold extends StatelessWidget {
             FilledButton(
               onPressed: () {
                 context.read<PlayerBloc>().add(
-                  PlayerOpenFileRequested(
+                  PlayerAddToQueue(
                     '/mnt/data/songs/2XKO Official Cinematic_ Ties That Bind ft. Courtney LaPlante of Spiritbox.mp3',
+                  ),
+                );
+                context.read<PlayerBloc>().add(
+                  PlayerAddToQueue(
+                    '/mnt/data/songs/Adoギラギラ.mp3',
+                  ),
+                );
+                context.read<PlayerBloc>().add(
+                  PlayerAddToQueue(
+                    '/mnt/data/songs/Anytime Anywhere.mp3',
+                  ),
+                );
+                context.read<PlayerBloc>().add(
+                  PlayerAddToQueue(
+                    '/mnt/data/songs/dreamy night.mp3',
                   ),
                 );
               },
