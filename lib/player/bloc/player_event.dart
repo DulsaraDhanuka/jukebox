@@ -29,7 +29,7 @@ final class PlayerChangeVolume extends PlayerEvent {
   final double volume;
 
   @override
-  List<Object> get props => [volume];
+  List<Object> get props => [...super.props, volume];
 }
 
 final class PlayerSeek extends PlayerEvent {
@@ -38,16 +38,34 @@ final class PlayerSeek extends PlayerEvent {
   final Duration position;
 
   @override
-  List<Object> get props => [position];
+  List<Object> get props => [...super.props, position];
 }
 
 final class PlayerAddToQueue extends PlayerEvent {
-  const PlayerAddToQueue(this.filePath);
+  const PlayerAddToQueue(this.playable);
 
-  final String filePath;
+  final Playable playable;
 
   @override
-  List<Object> get props => [filePath];
+  List<Object> get props => [...super.props, playable];
+}
+
+final class PlayerRemoveFromQueue extends PlayerEvent {
+  const PlayerRemoveFromQueue(this.index);
+
+  final int index;
+
+  @override
+  List<Object> get props => [...super.props, index];
+}
+
+final class PlayerChangeCurrentQueueIndex extends PlayerEvent {
+  const PlayerChangeCurrentQueueIndex(this.index);
+
+  final int index;
+
+  @override
+  List<Object> get props => [...super.props, index];
 }
 
 final class PlayerNext extends PlayerEvent {

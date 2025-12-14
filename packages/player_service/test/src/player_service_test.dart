@@ -1,10 +1,16 @@
 import 'dart:io';
 
-import 'package:media_kit/media_kit.dart';
+import 'package:media_kit/media_kit.dart' hide Playable;
+import 'package:player_service/src/models/playable.dart';
 import 'package:player_service/src/player_service.dart';
 import 'package:test/test.dart';
 
-final String testAudioFile = '${Directory.current.path}/test_resources/audio.mp3';
+final String testAudioFile =
+    '${Directory.current.path}/test_resources/audio.mp3';
+final Playable testAudioPlayable = Playable(
+  title: 'Test',
+  filePath: testAudioFile,
+);
 
 void main() {
   group('PlayerService', () {
@@ -24,7 +30,7 @@ void main() {
         playerService.getStatus(),
         emitsInOrder([PlayerServiceStatus.stopped, PlayerServiceStatus.paused]),
       );
-      await playerService.open(testAudioFile);
+      await playerService.open(testAudioPlayable);
     });
 
     test('Openening a file while a file is already opened', () async {
@@ -38,8 +44,8 @@ void main() {
         ]),
       );
 
-      await playerService.open(testAudioFile);
-      await playerService.open(testAudioFile);
+      await playerService.open(testAudioPlayable);
+      await playerService.open(testAudioPlayable);
     });
 
     test(
@@ -56,9 +62,9 @@ void main() {
           ]),
         );
 
-        await playerService.open(testAudioFile);
+        await playerService.open(testAudioPlayable);
         await playerService.play();
-        await playerService.open(testAudioFile);
+        await playerService.open(testAudioPlayable);
       },
     );
 
@@ -79,7 +85,7 @@ void main() {
           PlayerServiceStatus.playing,
         ]),
       );
-      await playerService.open(testAudioFile);
+      await playerService.open(testAudioPlayable);
       await playerService.play();
     });
 
@@ -93,7 +99,7 @@ void main() {
           PlayerServiceStatus.paused,
         ]),
       );
-      await playerService.open(testAudioFile);
+      await playerService.open(testAudioPlayable);
       await playerService.play();
       await playerService.pause();
     });
@@ -115,7 +121,7 @@ void main() {
           PlayerServiceStatus.paused,
         ]),
       );
-      await playerService.open(testAudioFile);
+      await playerService.open(testAudioPlayable);
       await playerService.pause();
     });
 
@@ -130,7 +136,7 @@ void main() {
           PlayerServiceStatus.paused,
         ]),
       );
-      await playerService.open(testAudioFile);
+      await playerService.open(testAudioPlayable);
       await playerService.play();
       await playerService.pause();
       await playerService.pause();
@@ -145,7 +151,7 @@ void main() {
           PlayerServiceStatus.stopped,
         ]),
       );
-      await playerService.open(testAudioFile);
+      await playerService.open(testAudioPlayable);
       await playerService.stop();
     });
 
@@ -159,7 +165,7 @@ void main() {
           PlayerServiceStatus.stopped,
         ]),
       );
-      await playerService.open(testAudioFile);
+      await playerService.open(testAudioPlayable);
       await playerService.play();
       await playerService.stop();
     });
@@ -175,7 +181,7 @@ void main() {
           PlayerServiceStatus.stopped,
         ]),
       );
-      await playerService.open(testAudioFile);
+      await playerService.open(testAudioPlayable);
       await playerService.play();
       await playerService.pause();
       await playerService.stop();
@@ -215,7 +221,7 @@ void main() {
         playerService.getPosition(),
         emitsInOrder([Duration.zero, const Duration(seconds: 15)]),
       );
-      await playerService.open(testAudioFile);
+      await playerService.open(testAudioPlayable);
       await playerService.seek(const Duration(seconds: 15));
     });
 
@@ -226,7 +232,7 @@ void main() {
           PlayerServiceStatus.stopped,
           PlayerServiceStatus.paused,
           PlayerServiceStatus.playing,
-          PlayerServiceStatus.completed
+          PlayerServiceStatus.completed,
         ]),
       );
       expect(
@@ -236,7 +242,7 @@ void main() {
           const Duration(seconds: 41),
         ]),
       );
-      await playerService.open(testAudioFile);
+      await playerService.open(testAudioPlayable);
       await playerService.seek(const Duration(seconds: 41));
       await playerService.play();
     });
@@ -247,7 +253,7 @@ void main() {
         emitsInOrder([
           PlayerServiceStatus.stopped,
           PlayerServiceStatus.paused,
-          PlayerServiceStatus.completed
+          PlayerServiceStatus.completed,
         ]),
       );
       expect(
@@ -257,7 +263,7 @@ void main() {
           const Duration(seconds: 42, microseconds: 8000),
         ]),
       );
-      await playerService.open(testAudioFile);
+      await playerService.open(testAudioPlayable);
       await playerService.seek(const Duration(minutes: 1));
     });
   });

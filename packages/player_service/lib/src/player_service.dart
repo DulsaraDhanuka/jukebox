@@ -2,7 +2,8 @@ import 'dart:async';
 import 'dart:io';
 import 'dart:math';
 
-import 'package:media_kit/media_kit.dart';
+import 'package:media_kit/media_kit.dart' hide Playable;
+import 'package:player_service/src/models/models.dart';
 
 enum PlayerServiceStatus { stopped, completed, playing, paused, error }
 
@@ -51,10 +52,10 @@ class PlayerService {
     }
   }
 
-  Future<void> open(String filePath) async {
+  Future<void> open(Playable playable) async {
     await stop();
     unawaited(
-      _player.open(Media(File(filePath).uri.toString()), play: false),
+      _player.open(Media(File(playable.filePath).uri.toString()), play: false),
     );
 
     await for (final playlist in _player.stream.playlist) {

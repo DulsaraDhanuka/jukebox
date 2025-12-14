@@ -24,7 +24,10 @@ PlayerState _$PlayerStateFromJson(Map<String, dynamic> json) => $checkedCreate(
       queue: $checkedConvert(
         'queue',
         (v) =>
-            (v as List<dynamic>?)?.map((e) => e as String).toList() ?? const [],
+            (v as List<dynamic>?)
+                ?.map((e) => Playable.fromJson(e as Map<String, dynamic>))
+                .toList() ??
+            const [],
       ),
       duration: $checkedConvert(
         'duration',
@@ -49,7 +52,7 @@ Map<String, dynamic> _$PlayerStateToJson(PlayerState instance) =>
     <String, dynamic>{
       'status': _$PlayerStatusEnumMap[instance.status]!,
       'current_queue_index': instance.currentQueueIndex,
-      'queue': instance.queue,
+      'queue': instance.queue.map((e) => e.toJson()).toList(),
       'duration': instance.duration.inMicroseconds,
       'position': instance.position.inMicroseconds,
       'volume': instance.volume,

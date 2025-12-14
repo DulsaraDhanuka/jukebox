@@ -18,7 +18,7 @@ final class PlayerState extends Equatable {
 
   final PlayerStatus status;
   final int currentQueueIndex;
-  final List<String> queue;
+  final List<Playable> queue;
   final Duration duration;
   final Duration position;
   final double volume;
@@ -26,7 +26,7 @@ final class PlayerState extends Equatable {
   PlayerState copyWith({
     PlayerStatus? status,
     int? currentQueueIndex,
-    List<String>? queue,
+    List<Playable>? queue,
     Duration? duration,
     Duration? position,
     double? volume,

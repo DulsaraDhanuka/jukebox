@@ -17,6 +17,12 @@ dependencies:
   mime: ^2.0.0
   player_service:
     path: packages/player_service
+  library_api:
+    path: packages/library_api
+  library_repository:
+    path: packages/library_repository
+  local_storage_library_api:
+    path: packages/local_storage_library_api
   flutter_bloc: ^9.1.1
   hydrated_bloc: ^10.1.1
   equatable: ^2.0.7
