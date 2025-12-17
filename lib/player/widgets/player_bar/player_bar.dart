@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:jukebox/player/widgets/player_bar/player_controls.dart';
 import 'package:jukebox/player/widgets/player_bar/player_slider.dart';
+import 'package:jukebox/player/widgets/player_bar/player_title.dart';
 
 class PlayerBar extends StatelessWidget {
   const PlayerBar({super.key});
@@ -29,7 +30,8 @@ class PlayerBarView extends StatelessWidget {
         spacing: 5.0,
         children: [
           PlayerControls(),
-          PlayerSlider()
+          PlayerSlider(),
+          PlayerTitle(),
         ],
       ),
     );

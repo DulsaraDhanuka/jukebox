@@ -80,7 +80,6 @@ class LocalStorageLibraryApi extends LibraryApi {
       '$_libraryPath/${basename(filePath)}',
     );
     final newId = getRandomString(10);
-    print(newId);
     await _database.insert(__files_table_name__, {
       'id': newId,
       'title': basename(newFile.path),

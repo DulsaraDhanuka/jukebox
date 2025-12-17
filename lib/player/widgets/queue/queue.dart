@@ -1,4 +1,3 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -26,47 +25,33 @@ class QueueView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MultiBlocListener(
-      listeners: [
-        BlocListener<PlayerBloc, PlayerState>(
-          listenWhen: (previous, current) =>
-              previous.currentQueueIndex != current.currentQueueIndex ||
-              listEquals(previous.queue, current.queue),
-          listener: (context, state) {},
-        ),
-      ],
-      child: BlocBuilder<PlayerBloc, PlayerState>(
-        builder: (context, state) {
-          return ListView.builder(
-            itemCount: state.queue.length,
-            itemBuilder: (_, index) {
-              final playable = state.queue.elementAt(index);
-              // return Dismissible(
-              //   key: Key(playable.filePath),
-              //   onDismissed: (direction) {
-              //     context.read<PlayerBloc>().add(PlayerRemoveFromQueue(index));
-              //   },
-              //   child: ,
-              // );
-              return ListTile(
-                onTap: () {
-                  context.read<PlayerBloc>().add(
-                    PlayerChangeCurrentQueueIndex(index),
-                  );
-                },
-                title: Text(playable.title),
-                selected: index == state.currentQueueIndex,
-                trailing: IconButton(
-                  onPressed: () => context.read<PlayerBloc>().add(
-                    PlayerRemoveFromQueue(index),
-                  ),
-                  icon: Icon(Icons.close),
+    return BlocBuilder<PlayerBloc, PlayerState>(
+      builder: (context, state) {
+        return ListView.builder(
+          itemCount: state.queue.length,
+          itemBuilder: (_, index) {
+            final playable = state.queue.elementAt(index);
+            return ListTile(
+              onTap: () {
+                context.read<PlayerBloc>().add(
+                  PlayerChangeCurrentQueueIndex(index),
+                );
+              },
+              title: Text(playable.title),
+              selected: index == state.currentQueueIndex,
+              trailing: IconButton(
+                onPressed: () => context.read<PlayerBloc>().add(
+                  PlayerRemoveFromQueue(index),
                 ),
-              );
-            },
-          );
-        },
-      ),
+                icon: Icon(Icons.close),
+              ),
+            );
+          },
+        );
+      },
+      buildWhen: (previous, current) =>
+          previous.currentQueueIndex != current.currentQueueIndex ||
+          !listEquals(previous.queue, current.queue),
     );
   }
 }
