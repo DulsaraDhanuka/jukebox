@@ -8,37 +8,30 @@ import 'package:rxdart/rxdart.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 class LocalStorageLibraryApi extends LibraryApi {
-  LocalStorageLibraryApi._({
+  LocalStorageLibraryApi({
     required String libraryPath,
   }) : _libraryPath = libraryPath;
 
   final String _libraryPath;
   late final Database _database;
-  final String __files_table_name__ = 'files';
+  final String kFilesTableName = 'files';
 
   late final _libraryFilesStreamController =
       BehaviorSubject<List<LocalStorageLibraryFile>>.seeded(const []);
 
-  static Future<LocalStorageLibraryApi> getInstance(
-    String libraryPath,
-  ) async {
+  @override
+  Future<void> initialize() async {
     if (Platform.isWindows || Platform.isLinux) {
       sqfliteFfiInit();
       databaseFactory = databaseFactoryFfi;
     }
 
-    final api = LocalStorageLibraryApi._(libraryPath: libraryPath);
-    await api._init();
-    return api;
-  }
-
-  Future<void> _init() async {
     _database = await openDatabase(
       join(_libraryPath, '.jukebox.index'),
       onCreate: (db, version) {
         return db.execute(
           '''
-            CREATE TABLE "$__files_table_name__" (
+            CREATE TABLE "$kFilesTableName" (
               "id"	TEXT NOT NULL UNIQUE,
               "title"	TEXT NOT NULL,
               "file_name"	TEXT NOT NULL,
@@ -49,7 +42,7 @@ class LocalStorageLibraryApi extends LibraryApi {
       version: 1,
     );
 
-    final files = (await _database.query(__files_table_name__))
+    final files = (await _database.query(kFilesTableName))
         .map(
           (map) => LocalStorageLibraryFile.fromJson(
             map,
@@ -80,15 +73,15 @@ class LocalStorageLibraryApi extends LibraryApi {
       '$_libraryPath/${basename(filePath)}',
     );
     final newId = getRandomString(10);
-    await _database.insert(__files_table_name__, {
+    await _database.insert(kFilesTableName, {
       'id': newId,
       'title': basename(newFile.path),
       'file_name': basename(newFile.path),
     });
     final newRow = (await _database.query(
-      __files_table_name__,
+      kFilesTableName,
       where: "id = '$newId'",
-      columns: ['id', 'title', 'file_name']
+      columns: ['id', 'title', 'file_name'],
     )).first;
     _libraryFilesStreamController.add([
       ..._libraryFilesStreamController.value,
@@ -119,4 +112,19 @@ class LocalStorageLibraryApi extends LibraryApi {
   @override
   Stream<List<LocalStorageLibraryFile>> getFiles() =>
       _libraryFilesStreamController.asBroadcastStream();
+
+  @override
+  Future<LibraryFile> getFile(String id) async {
+    final row = await _database.query(
+      kFilesTableName,
+      where: "id = '$id'",
+      limit: 1,
+    );
+    final file = LocalStorageLibraryFile.fromJson(
+      row.first,
+      Lazy(() => _getFilePath(row.first)),
+      Lazy(() => _getSrtPath(row.first)),
+    );
+    return file;
+  }
 }

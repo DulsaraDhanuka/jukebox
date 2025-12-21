@@ -1,0 +1,25 @@
+name: local_storage_playlists_api
+description: Playlists api implemented using local storage
+version: 0.1.0+1
+publish_to: none
+
+environment:
+  sdk: ^3.9.0
+  flutter: ^3.35.0
+
+dependencies:
+  flutter:
+    sdk: flutter
+  meta: ^1.17.0
+  rxdart: ^0.28.0
+  shared_preferences: ^2.5.4
+  playlists_api:
+    path: ../playlists_api
+  library_api:
+    path: ../library_api
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  mocktail: ^1.0.4
+  very_good_analysis: ^10.0.0

@@ -7,8 +7,8 @@ sealed class LibraryEvent extends Equatable {
   List<Object> get props => [];
 }
 
-final class LibrarySubscriptionRequested extends LibraryEvent {
-  const LibrarySubscriptionRequested();
+final class LibrarySubscribe extends LibraryEvent {
+  const LibrarySubscribe();
 }
 
 final class LibraryAddNewFile extends LibraryEvent {

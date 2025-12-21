@@ -23,6 +23,12 @@ dependencies:
     path: packages/library_repository
   local_storage_library_api:
     path: packages/local_storage_library_api
+  local_storage_playlists_api:
+    path: packages/local_storage_playlists_api
+  playlists_api:
+    path: packages/playlists_api
+  playlists_repository:
+    path: packages/playlists_repository
   flutter_bloc: ^9.1.1
   hydrated_bloc: ^10.1.1
   equatable: ^2.0.7

@@ -1,0 +1,18 @@
+name: playlists_repository
+description: A repository that handles playlists related requests
+version: 0.1.0+1
+publish_to: none
+
+environment:
+  sdk: ^3.9.0
+
+dependencies: 
+  playlists_api:
+    path: ../playlists_api
+  library_api:
+    path: ../library_api
+
+dev_dependencies:
+  mocktail: ^1.0.4
+  test: ^1.26.3
+  very_good_analysis: ^10.0.0

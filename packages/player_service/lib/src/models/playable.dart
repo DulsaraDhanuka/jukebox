@@ -10,11 +10,13 @@ part 'playable.g.dart';
 final class Playable extends Equatable {
   const Playable({
     required this.title,
-    required this.filePath
+    required this.filePath,
+    required this.libraryId
   });
 
   final String title;
-  final String filePath; 
+  final String filePath;
+  final String libraryId;
 
   @override
   List<String> get props => [title, filePath];

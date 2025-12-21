@@ -10,6 +10,7 @@ final String testAudioFile =
 final Playable testAudioPlayable = Playable(
   title: 'Test',
   filePath: testAudioFile,
+  libraryId: '0'
 );
 
 void main() {

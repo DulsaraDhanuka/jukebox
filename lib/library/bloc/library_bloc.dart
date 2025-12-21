@@ -10,14 +10,14 @@ class LibraryBloc extends Bloc<LibraryEvent, LibraryState> {
   LibraryBloc({required LibraryRepository libraryRepository})
     : _libraryRepository = libraryRepository,
       super(LibraryInitial()) {
-    on<LibrarySubscriptionRequested>(_onSubscriptionRequested);
+    on<LibrarySubscribe>(_onSubscriptionRequested);
     on<LibraryAddNewFile>(_onAddNewFileRequested);
   }
 
   final LibraryRepository _libraryRepository;
 
   Future<void> _onSubscriptionRequested(
-    LibrarySubscriptionRequested event,
+    LibrarySubscribe event,
     Emitter<LibraryState> emit,
   ) async {
     emit(LibraryLoading());

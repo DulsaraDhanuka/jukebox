@@ -8,7 +8,8 @@ void main() async {
   sqfliteFfiInit();
   databaseFactory = databaseFactoryFfi;
   WidgetsFlutterBinding.ensureInitialized();
-  final libraryApi = await LocalStorageLibraryApi.getInstance('/tmp/test/');
+  final libraryApi = LocalStorageLibraryApi(libraryPath: '/tmp/test/');
+  await libraryApi.initialize();
   // String id = "";
   await for (final files in libraryApi.getFiles()) {
     for (final file in files) {

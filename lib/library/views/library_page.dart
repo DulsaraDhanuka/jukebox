@@ -16,7 +16,7 @@ class LibraryPage extends StatelessWidget {
     return BlocProvider(
       create: (context) =>
           LibraryBloc(libraryRepository: context.read<LibraryRepository>())
-            ..add(LibrarySubscriptionRequested()),
+            ..add(LibrarySubscribe()),
       child: const LocalLibraryView(),
     );
   }
@@ -42,7 +42,7 @@ class LocalLibraryView extends StatelessWidget {
         onSelectChanged: (value) {
           context.read<PlayerBloc>().add(
             PlayerAddToQueue(
-              Playable(title: file.title, filePath: file.filePath()!),
+              Playable(title: file.title, filePath: file.filePath()!, libraryId: file.id),
             ),
           );
         },

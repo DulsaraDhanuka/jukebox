@@ -5,6 +5,8 @@ import 'package:jukebox/navigator/cubit/navigator_cubit.dart';
 import 'package:jukebox/navigator/widgets/sidebar.dart';
 import 'package:jukebox/player/views/player_page.dart';
 import 'package:jukebox/player/widgets/queue/queue.dart';
+import 'package:jukebox/playlist/views/playlist_page.dart';
+import 'package:jukebox/playlists/widgets/add_to_playlist.dart';
 import 'player/widgets/player_bar/player_bar.dart';
 
 class DesktopScaffold extends StatelessWidget {
@@ -58,7 +60,7 @@ class MainContent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Stack(
-      alignment: AlignmentGeometry.topRight,
+      alignment: AlignmentGeometry.bottomRight,
       children: [
         Container(
           decoration: BoxDecoration(
@@ -67,13 +69,15 @@ class MainContent extends StatelessWidget {
           ),
           clipBehavior: Clip.hardEdge,
           child: BlocBuilder<NavigatorCubit, NavigatorState>(
-            builder: (context, state) => switch (state) {
-              NavigatorLibraryPage() => LibraryPage(),
-              NavigatorPlayerPage() => PlayerPage(),
+            builder: (context, state) => switch (state.currentPage) {
+              CurrentPage.libraryPage => LibraryPage(),
+              CurrentPage.playerPage => PlayerPage(),
+              CurrentPage.playlistPage => PlaylistPage(key: Key(state.selectedPlaylistId!), playlistId: state.selectedPlaylistId!,)
             },
           ),
         ),
-        Queue(),
+        Visibility(visible: context.watch<NavigatorCubit>().state.isAddToPlaylistVisible, child: AddToPlaylistWidget()),
+        Visibility(visible: context.watch<NavigatorCubit>().state.isQueueVisible, child: Queue()),
       ],
     );
   }

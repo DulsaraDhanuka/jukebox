@@ -6,9 +6,11 @@ import 'package:flutter/material.dart';
 import 'package:hydrated_bloc/hydrated_bloc.dart';
 import 'package:jukebox/app.dart';
 import 'package:local_storage_library_api/local_storage_library_api.dart';
+import 'package:local_storage_playlists_api/local_storage_playlists_api.dart';
 import 'package:media_kit/media_kit.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:library_repository/library_repository.dart';
+import 'package:playlists_repository/playlists_repository.dart';
 import 'package:window_manager/window_manager.dart';
 
 Future<void> main() async {
@@ -49,7 +51,17 @@ Future<void> main() async {
         : HydratedStorageDirectory((await getTemporaryDirectory()).path),
   );
 
-  final libraryApi = await LocalStorageLibraryApi.getInstance('/tmp/libsssss');
+  final libraryApi = LocalStorageLibraryApi(libraryPath: '/tmp/libsssss');
+  await libraryApi.initialize();
 
-  runApp(App(createLibraryRepository: () => LibraryRepository(libraryApi: libraryApi),));
+  final playlistsApi = LocalStoragePlaylistsApi([libraryApi]);
+  await playlistsApi.initialize();
+
+  runApp(
+    App(
+      createLibraryRepository: () => LibraryRepository(libraryApi: libraryApi),
+      createPlaylistsRepository: () =>
+          PlaylistsRepository(playlistsApi: playlistsApi),
+    ),
+  );
 }
